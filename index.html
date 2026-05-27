@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff List Comparator — McKinnon SC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #0F216D;
+    --blue-mid: #1a3499;
+    --blue-light: #e8ecf8;
+    --blue-faint: #f3f5fb;
+    --amber: #c47b0a;
+    --amber-light: #fef3db;
+    --green: #2d7d46;
+    --green-light: #e6f4ea;
+    --red: #b83232;
+    --red-light: #fdeaea;
+    --purple: #6b3fa0;
+    --purple-light: #f3ecfc;
+    --text: #1a1a2e;
+    --text-mid: #4a4a6a;
+    --text-muted: #8888aa;
+    --border: #dde0ee;
+    --surface: #ffffff;
+    --bg: #f5f6fc;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --serif: 'Lora', serif;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(15,33,109,0.08), 0 4px 12px rgba(15,33,109,0.06);
+    --shadow-sm: 0 1px 2px rgba(15,33,109,0.06);
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background: var(--blue);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 56px;
+    border-bottom: 3px solid #0a1750;
+  }
+  .site-header .logo {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  .site-header .logo span {
+    font-weight: 400;
+    font-style: italic;
+    opacity: 0.8;
+    font-size: 14px;
+    margin-left: 8px;
+  }
+  .site-header .pill {
+    margin-left: auto;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.85);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  /* ── Layout ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+  .page-title {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 4px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Options bar ── */
+  .options-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+  .options-bar .opt-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-mid);
+  }
+  .options-bar .opt-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .options-bar .opt-group label:hover { color: var(--blue); }
+  input[type=checkbox] {
+    width: 15px; height: 15px;
+    accent-color: var(--blue);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .opt-sep { width: 1px; height: 20px; background: var(--border); }
+  .opt-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+
+  /* ── Input columns ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+  .col-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .col-head {
+    padding: 10px 14px;
+    background: var(--blue-faint);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-head .col-title {
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blue);
+  }
+  .col-head .col-count {
+    font-size: 11px;
+    background: var(--blue-light);
+    color: var(--blue);
+    border-radius: 99px;
+    padding: 1px 8px;
+    font-weight: 500;
+    margin-left: auto;
+  }
+  .col-head .col-actions {
+    display: flex;
+    gap: 4px;
+  }
+  .col-head button.icon-btn {
+    width: 26px; height: 26px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: all 0.1s;
+  }
+  .col-head button.icon-btn:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+
+  textarea {
+    width: 100%;
+    height: 200px;
+    resize: vertical;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    padding: 12px 14px;
+    border: none;
+    background: var(--surface);
+    color: var(--text);
+    line-height: 1.7;
+    display: block;
+  }
+  textarea:focus { outline: none; background: #fdfeff; }
+
+  .col-footer {
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-footer .stats {
+    font-size: 11px;
+    color: var(--text-muted);
+    flex: 1;
+  }
+  .col-footer .stats b { color: var(--text-mid); font-weight: 500; }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .btn:hover { background: var(--blue-faint); border-color: var(--blue); color: var(--blue); }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(15,33,109,0.25);
+  }
+  .btn.primary:hover { background: var(--blue-mid); border-color: var(--blue-mid); }
+  .btn svg, .btn .icon { width: 15px; height: 15px; flex-shrink: 0; }
+  .t-sep { width: 1px; height: 28px; background: var(--border); }
+
+  /* ── Results ── */
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .results-grid.full { grid-template-columns: 1fr; }
+
+  .result-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .result-block.accent-amber { border-top: 3px solid #e09a12; }
+  .result-block.accent-blue  { border-top: 3px solid var(--blue); }
+  .result-block.accent-green { border-top: 3px solid #2d9e50; }
+  .result-block.accent-purple{ border-top: 3px solid var(--purple); }
+  .result-block.accent-red   { border-top: 3px solid var(--red); }
+
+  .result-head {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .result-head .rh-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .result-head .rh-badge {
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 99px;
+    font-weight: 500;
+  }
+  .badge-amber { background: var(--amber-light); color: #7a4d08; }
+  .badge-blue  { background: var(--blue-light);  color: var(--blue); }
+  .badge-green { background: var(--green-light); color: #1a5c30; }
+  .badge-purple{ background: var(--purple-light);color: #4a2870; }
+  .badge-red   { background: var(--red-light);   color: #7a1f1f; }
+  .badge-gray  { background: #eee; color: #555; }
+
+  .result-copy-btn {
+    font-size: 11px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.1s;
+    white-space: nowrap;
+  }
+  .result-copy-btn:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+
+  .result-body { max-height: 260px; overflow-y: auto; }
+  .result-body .entry {
+    padding: 5px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    border-bottom: 1px solid #f0f0f8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .result-body .entry:last-child { border-bottom: none; }
+  .result-body .entry .e-index { font-size: 10px; color: var(--text-muted); min-width: 22px; }
+  .result-body .entry .e-val { flex: 1; }
+  .result-body .entry .e-tag { font-size: 10px; padding: 1px 6px; border-radius: 99px; background: #eee; color: #666; }
+
+  .result-empty { padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+  /* ── Summary row ── */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .summary-card .sc-num { font-size: 22px; font-weight: 500; font-family: var(--serif); color: var(--blue); }
+  .summary-card .sc-label { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── Dedup / stats panel ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .panel-head {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+  .panel-head .ph-arrow { margin-left: auto; font-size: 11px; color: var(--text-muted); transition: transform 0.2s; }
+  .panel-head.open .ph-arrow { transform: rotate(180deg); }
+  .panel-body { padding: 12px 16px; display: none; }
+  .panel-body.open { display: block; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+  }
+  .empty-state svg { margin-bottom: 12px; opacity: 0.3; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 700px) {
+    .columns, .results-grid, .summary-bar { grid-template-columns: 1fr; }
+    .results-grid.full { grid-template-columns: 1fr; }
+    .toolbar { gap: 6px; }
+    .btn { font-size: 12px; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">McKinnon SC <span>IT Tools</span></div>
+  <div class="pill">Staff List Comparator</div>
+</header>
+
+<main class="main">
+  <h1 class="page-title">Staff List Comparator</h1>
+  <p class="page-sub">Paste two staff lists and compare, clean, deduplicate, and export the results.</p>
+
+  <!-- Options -->
+  <div class="options-bar">
+    <span class="opt-title">Options</span>
+    <div class="opt-sep"></div>
+    <div class="opt-group">
+      <label><input type="checkbox" id="opt-strip" checked> Strip <code style="font-size:11px;background:#eee;padding:1px 4px;border-radius:3px">@mckinnonsc.vic.edu.au</code></label>
+    </div>
+    <div class="opt-sep"></div>
+    <div class="opt-group">
+      <label><input type="checkbox" id="opt-sort"> Sort A–Z before comparing</label>
+    </div>
+    <div class="opt-sep"></div>
+    <div class="opt-group">
+      <label><input type="checkbox" id="opt-case" checked> Case-insensitive</label>
+    </div>
+    <div class="opt-sep"></div>
+    <div class="opt-group">
+      <label><input type="checkbox" id="opt-trim" checked> Ignore whitespace</label>
+    </div>
+  </div>
+
+  <!-- Input columns -->
+  <div class="columns">
+    <div class="col-card">
+      <div class="col-head">
+        <span class="col-title">List A</span>
+        <div class="col-actions">
+          <button class="icon-btn" title="Sort A–Z" onclick="sortList('a')">↕</button>
+          <button class="icon-btn" title="Strip email domains" onclick="stripList('a')">✂</button>
+          <button class="icon-btn" title="Deduplicate" onclick="dedupList('a')">⊘</button>
+          <button class="icon-btn" title="Clear" onclick="clearList('a')">✕</button>
+        </div>
+        <span class="col-count" id="count-a">0 entries</span>
+      </div>
+      <textarea id="list-a" placeholder="Paste list A here — one entry per line&#10;&#10;e.g.&#10;jsmith&#10;jane.doe@mckinnonsc.vic.edu.au&#10;t.nguyen@mckinnonsc.vic.edu.au&#10;sarah.k"></textarea>
+      <div class="col-footer">
+        <span class="stats" id="stats-a">—</span>
+        <button class="btn" style="padding:4px 10px;font-size:11px" onclick="pasteFromClipboard('a')">Paste</button>
+      </div>
+    </div>
+    <div class="col-card">
+      <div class="col-head">
+        <span class="col-title">List B</span>
+        <div class="col-actions">
+          <button class="icon-btn" title="Sort A–Z" onclick="sortList('b')">↕</button>
+          <button class="icon-btn" title="Strip email domains" onclick="stripList('b')">✂</button>
+          <button class="icon-btn" title="Deduplicate" onclick="dedupList('b')">⊘</button>
+          <button class="icon-btn" title="Clear" onclick="clearList('b')">✕</button>
+        </div>
+        <span class="col-count" id="count-b">0 entries</span>
+      </div>
+      <textarea id="list-b" placeholder="Paste list B here — one entry per line&#10;&#10;e.g.&#10;jsmith&#10;m.chen@mckinnonsc.vic.edu.au&#10;sarah.k&#10;r.patel"></textarea>
+      <div class="col-footer">
+        <span class="stats" id="stats-b">—</span>
+        <button class="btn" style="padding:4px 10px;font-size:11px" onclick="pasteFromClipboard('b')">Paste</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="btn primary" onclick="compare()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Compare lists
+    </button>
+    <div class="t-sep"></div>
+    <button class="btn" onclick="stripBoth()">✂ Strip email domains</button>
+    <button class="btn" onclick="sortBoth()">↕ Sort both A–Z</button>
+    <button class="btn" onclick="dedupBoth()">⊘ Remove duplicates</button>
+    <div class="t-sep"></div>
+    <button class="btn" onclick="swapLists()">⇄ Swap lists</button>
+    <button class="btn" onclick="mergeLists()">⊕ Merge to A</button>
+    <div class="t-sep"></div>
+    <button class="btn" onclick="exportCSV()">↓ Export CSV</button>
+    <button class="btn" onclick="clearAll()">✕ Clear all</button>
+  </div>
+
+  <!-- Results area -->
+  <div id="results-area">
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <p>Paste your lists above, then click <strong>Compare lists</strong></p>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ─── helpers ─── */
+function parseList(raw) {
+  const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  return lines;
+}
+
+function processEntry(entry, strip, ci, trim) {
+  let v = entry;
+  if (trim) v = v.trim();
+  if (strip) v = v.replace(/@mckinnonsc\.vic\.edu\.au$/i, '').trim();
+  if (ci) v = v.toLowerCase();
+  return v;
+}
+
+function getOpts() {
+  return {
+    strip: document.getElementById('opt-strip').checked,
+    sort:  document.getElementById('opt-sort').checked,
+    ci:    document.getElementById('opt-case').checked,
+    trim:  document.getElementById('opt-trim').checked,
+  };
+}
+
+function updateStats(side) {
+  const raw = parseList(document.getElementById('list-' + side).value);
+  const opts = getOpts();
+  const proc = raw.map(e => processEntry(e, opts.strip, opts.ci, opts.trim));
+  const unique = new Set(proc).size;
+  const dupes = raw.length - unique;
+  const emails = raw.filter(e => e.includes('@')).length;
+
+  document.getElementById('count-' + side).textContent = raw.length + ' entr' + (raw.length === 1 ? 'y' : 'ies');
+  document.getElementById('stats-' + side).innerHTML =
+    `<b>${unique}</b> unique` +
+    (dupes > 0 ? ` · <b style="color:var(--red)">${dupes}</b> duplicate${dupes>1?'s':''}` : '') +
+    (emails > 0 ? ` · <b>${emails}</b> with email domain` : '');
+}
+
+document.getElementById('list-a').addEventListener('input', () => updateStats('a'));
+document.getElementById('list-b').addEventListener('input', () => updateStats('b'));
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function copyText(arr) {
+  navigator.clipboard.writeText(arr.join('\n')).then(() => toast('Copied ' + arr.length + ' entries')).catch(() => {});
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ─── per-column actions ─── */
+function sortList(side) {
+  const ta = document.getElementById('list-' + side);
+  ta.value = parseList(ta.value).sort((a,b) => a.localeCompare(b, undefined, {sensitivity:'base'})).join('\n');
+  updateStats(side);
+  toast('List ' + side.toUpperCase() + ' sorted A–Z');
+}
+
+function stripList(side) {
+  const ta = document.getElementById('list-' + side);
+  ta.value = parseList(ta.value).map(e => e.replace(/@mckinnonsc\.vic\.edu\.au$/i, '').trim()).join('\n');
+  updateStats(side);
+  toast('Email domains stripped from list ' + side.toUpperCase());
+}
+
+function dedupList(side) {
+  const ta = document.getElementById('list-' + side);
+  const original = parseList(ta.value);
+  const seen = new Set();
+  const deduped = original.filter(e => {
+    const key = e.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+  const removed = original.length - deduped.length;
+  ta.value = deduped.join('\n');
+  updateStats(side);
+  toast('Removed ' + removed + ' duplicate' + (removed !== 1 ? 's' : '') + ' from list ' + side.toUpperCase());
+}
+
+function clearList(side) {
+  document.getElementById('list-' + side).value = '';
+  updateStats(side);
+}
+
+async function pasteFromClipboard(side) {
+  try {
+    const text = await navigator.clipboard.readText();
+    const ta = document.getElementById('list-' + side);
+    ta.value = text.trim();
+    updateStats(side);
+    toast('Pasted into list ' + side.toUpperCase());
+  } catch(e) {
+    toast('Clipboard access denied — paste manually');
+  }
+}
+
+/* ─── global toolbar ─── */
+function stripBoth() { stripList('a'); stripList('b'); }
+function sortBoth()  { sortList('a'); sortList('b'); toast('Both lists sorted A–Z'); }
+function dedupBoth() { dedupList('a'); dedupList('b'); }
+
+function swapLists() {
+  const ta = document.getElementById('list-a');
+  const tb = document.getElementById('list-b');
+  [ta.value, tb.value] = [tb.value, ta.value];
+  updateStats('a'); updateStats('b');
+  toast('Lists swapped');
+}
+
+function mergeLists() {
+  const ta = document.getElementById('list-a');
+  const tb = document.getElementById('list-b');
+  const combined = [...parseList(ta.value), ...parseList(tb.value)];
+  const seen = new Set();
+  ta.value = combined.filter(e => { const k = e.toLowerCase().trim(); if(seen.has(k)) return false; seen.add(k); return true; }).join('\n');
+  updateStats('a');
+  toast('Merged unique entries from both lists into List A');
+}
+
+/* ─── compare ─── */
+function compare() {
+  const opts = getOpts();
+  const rawA = parseList(document.getElementById('list-a').value);
+  const rawB = parseList(document.getElementById('list-b').value);
+
+  if (!rawA.length && !rawB.length) {
+    toast('Both lists are empty');
+    return;
+  }
+
+  // Map processed → original for display
+  const procA = rawA.map(e => processEntry(e, opts.strip, opts.ci, opts.trim));
+  const procB = rawB.map(e => processEntry(e, opts.strip, opts.ci, opts.trim));
+
+  // Build maps: processed key → display value (keep first occurrence)
+  const mapA = new Map(), mapB = new Map();
+  procA.forEach((p,i) => { if(!mapA.has(p)) mapA.set(p, rawA[i]); });
+  procB.forEach((p,i) => { if(!mapB.has(p)) mapB.set(p, rawB[i]); });
+
+  const setA = new Set(mapA.keys());
+  const setB = new Set(mapB.keys());
+
+  let onlyInA = [...setA].filter(k => !setB.has(k));
+  let onlyInB = [...setB].filter(k => !setA.has(k));
+  let common  = [...setA].filter(k =>  setB.has(k));
+
+  // Detect duplicates within each raw list
+  const dupeA = findDupes(procA, rawA);
+  const dupeB = findDupes(procB, rawB);
+
+  if (opts.sort) {
+    const col = (a,b) => a.localeCompare(b, undefined, {sensitivity:'base'});
+    onlyInA.sort(col); onlyInB.sort(col); common.sort(col);
+  }
+
+  // Summary
+  const totalA = mapA.size, totalB = mapB.size;
+  const matchPct = common.length && Math.round(common.length / Math.max(totalA, totalB) * 100);
+
+  let html = `<div class="summary-bar">
+    <div class="summary-card"><div class="sc-num">${totalA}</div><div class="sc-label">Unique in A</div></div>
+    <div class="summary-card"><div class="sc-num">${totalB}</div><div class="sc-label">Unique in B</div></div>
+    <div class="summary-card"><div class="sc-num" style="color:var(--green)">${common.length}</div><div class="sc-label">In both</div></div>
+    <div class="summary-card"><div class="sc-num" style="color:var(--red)">${onlyInA.length + onlyInB.length}</div><div class="sc-label">Total missing</div></div>
+  </div>`;
+
+  html += `<div class="results-grid${common.length === 0 || (onlyInA.length === 0 && onlyInB.length === 0) ? '' : ''}">`;
+
+  if (onlyInA.length === 0 && onlyInB.length === 0) {
+    html += `<div class="result-block accent-green" style="grid-column:1/-1">
+      <div class="result-head"><span class="rh-title">✓ Lists are identical — no differences found</span><span class="rh-badge badge-green">${common.length} entries match</span></div>
+    </div>`;
+  }
+
+  if (onlyInA.length) {
+    html += resultBlock('amber', '⚠ Missing from list B', onlyInA.map(k=>mapA.get(k)), 'badge-amber', 'Copy missing from B');
+  }
+  if (onlyInB.length) {
+    html += resultBlock('blue', '⚠ Missing from list A', onlyInB.map(k=>mapB.get(k)), 'badge-blue', 'Copy missing from A');
+  }
+  if (common.length) {
+    html += resultBlock('green', '✓ Present in both lists', common.map(k=>mapA.get(k)), 'badge-green', 'Copy common');
+  }
+
+  html += `</div>`;
+
+  // Duplicate warnings
+  if (dupeA.length || dupeB.length) {
+    html += `<div style="margin-top:12px">`;
+    if (dupeA.length) html += resultBlock('red', '⊘ Duplicates in list A', dupeA, 'badge-red', 'Copy dupes A', true);
+    if (dupeB.length) html += resultBlock('purple', '⊘ Duplicates in list B', dupeB, 'badge-purple', 'Copy dupes B', true);
+    html += `</div>`;
+  }
+
+  document.getElementById('results-area').innerHTML = html;
+}
+
+function findDupes(proc, raw) {
+  const seen = new Map();
+  proc.forEach((p,i) => { if(!seen.has(p)) seen.set(p,[]); seen.get(p).push(raw[i]); });
+  const dupes = [];
+  seen.forEach((arr) => { if(arr.length > 1) dupes.push(...arr.slice(1)); });
+  return dupes;
+}
+
+function resultBlock(accent, title, entries, badgeClass, copyLabel, compact=false) {
+  const id = 'rb_' + Math.random().toString(36).slice(2);
+  window['_rb_' + id] = entries;
+  return `<div class="result-block accent-${accent}">
+    <div class="result-head">
+      <span class="rh-title">${title}</span>
+      <span class="rh-badge ${badgeClass}">${entries.length}</span>
+      <button class="result-copy-btn" onclick="copyText(window['_rb_${id}'])">⎘ ${copyLabel}</button>
+    </div>
+    <div class="result-body">
+      ${entries.length === 0
+        ? '<div class="result-empty">None</div>'
+        : entries.map((e,i) => `<div class="entry"><span class="e-index">${i+1}</span><span class="e-val">${esc(e)}</span></div>`).join('')
+      }
+    </div>
+  </div>`;
+}
+
+/* ─── export CSV ─── */
+function exportCSV() {
+  const opts = getOpts();
+  const rawA = parseList(document.getElementById('list-a').value);
+  const rawB = parseList(document.getElementById('list-b').value);
+
+  if (!rawA.length && !rawB.length) { toast('Nothing to export'); return; }
+
+  const procA = rawA.map(e => processEntry(e, opts.strip, opts.ci, opts.trim));
+  const procB = rawB.map(e => processEntry(e, opts.strip, opts.ci, opts.trim));
+  const setA = new Set(procA), setB = new Set(procB);
+  const all = new Set([...procA, ...procB]);
+
+  let csv = 'entry,in_list_a,in_list_b,status\n';
+  all.forEach(k => {
+    const inA = setA.has(k), inB = setB.has(k);
+    const status = inA && inB ? 'both' : inA ? 'only_in_a' : 'only_in_b';
+    csv += `"${k.replace(/"/g,'""')}",${inA},${inB},${status}\n`;
+  });
+
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'staff-comparison-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  toast('CSV exported');
+}
+
+function clearAll() {
+  clearList('a'); clearList('b');
+  document.getElementById('results-area').innerHTML = `<div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    <p>Paste your lists above, then click <strong>Compare lists</strong></p>
+  </div>`;
+  toast('Cleared');
+}
+
+/* init */
+updateStats('a'); updateStats('b');
+</script>
+</body>
+</html>
