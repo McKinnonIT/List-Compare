@@ -589,6 +589,20 @@ function copyText(arr, btnEl) {
   }).catch(() => {});
 }
 
+function copyCommaSeparated(arr, btnEl) {
+  navigator.clipboard.writeText(arr.join(', ')).then(() => {
+    toast('Copied ' + arr.length + ' entries, comma-separated');
+    if (btnEl) { btnEl.classList.add('done'); btnEl.textContent = 'Copied ✓'; setTimeout(() => { btnEl.classList.remove('done'); btnEl.textContent = 'Copy, comma-separated'; }, 1600); }
+  }).catch(() => {});
+}
+
+function copyAsString(arr, btnEl) {
+  navigator.clipboard.writeText(arr.map(e => `'${e}'`).join(', ')).then(() => {
+    toast('Copied ' + arr.length + ' entries as quoted string');
+    if (btnEl) { btnEl.classList.add('done'); btnEl.textContent = 'Copied ✓'; setTimeout(() => { btnEl.classList.remove('done'); btnEl.textContent = 'Copy as string'; }, 1600); }
+  }).catch(() => {});
+}
+
 /* ── Per-column actions ── */
 function sortList(side) {
   const ta = document.getElementById('list-' + side);
@@ -764,6 +778,8 @@ function resultBlock(accent, title, entries, pillClass) {
       <span class="rh-title">${title}</span>
       <span class="pill ${pillClass}">${entries.length}</span>
       <button class="result-copy-btn" id="copy-${id}" onclick="copyText(window['_rb_${id}'], document.getElementById('copy-${id}'))">Copy</button>
+      <button class="result-copy-btn" id="copycsv-${id}" onclick="copyCommaSeparated(window['_rb_${id}'], document.getElementById('copycsv-${id}'))">Copy, comma-separated</button>
+      <button class="result-copy-btn" id="copystr-${id}" onclick="copyAsString(window['_rb_${id}'], document.getElementById('copystr-${id}'))">Copy as string</button>
     </div>
     <div class="result-body">
       ${entries.length === 0
